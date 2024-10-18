@@ -1,2 +1,2 @@
-# I_click_it
+# I click it
 automated iClicker
