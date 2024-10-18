@@ -137,16 +137,9 @@ def main():
 
     class_name = my_classes[0]['class_name']
 
-    # Convert them to datetime objects with today's date
-    start_time = datetime.combine(
-        today, datetime.strptime(my_classes[0]['start_time'], '%H:%M').time()
-    )
-    end_time = datetime.combine(
+    end_time: datetime = datetime.combine(
         today, datetime.strptime(my_classes[0]['end_time'], '%H:%M').time()
     )
-
-    extra_time = 600  # 10 minutes
-    duration = (end_time - start_time).total_seconds() + extra_time
 
     # Initialize Selenium
     driver = setup_selenium()
@@ -161,7 +154,7 @@ def main():
     # Polling loop to check for active quizzes and submit attendance
     if join_clicked:
         poll_active = False
-        while time.time() - start_time < duration:  # Run for 1 hour
+        while datetime.now() < end_time:
             if check_poll_status(driver):
                 if not poll_active:
                     submit_attendance(driver)
