@@ -20,7 +20,7 @@ import os
 
 def get_ssm_parameter(param_name):
     """Retrieve the parameter from SSM Parameter Store."""
-    ssm = boto3.client('ssm', region_name='us-west-2')
+    ssm = boto3.client('ssm', region_name='us-east-1')
     try:
         response = ssm.get_parameter(Name=param_name, WithDecryption=True)
         return response['Parameter']['Value']
@@ -128,7 +128,9 @@ def submit_attendance(driver):
 
 def main():
     """Execute the main iClicker automation process."""
+    print('Starting iClicker automation...')
     # Retrieve iClicker credentials from SSM Parameter Store
+    print('Retrieving iClicker credentials from SSM Parameter Store...')
     email = get_ssm_parameter('/iclicker/email')
     password = get_ssm_parameter('/iclicker/password')
 
