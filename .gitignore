@@ -3,3 +3,6 @@
 
 # terraform
 **/.terraform
+**/terraform.tfstate.backup
+**/terraform.tfvars
+**/terraform.tfstate
