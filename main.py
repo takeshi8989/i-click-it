@@ -12,8 +12,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
-from datetime import datetime
-from classes import my_classes
+from datetime import datetime, timezone, timedelta
 import time
 import os
 
@@ -31,10 +30,12 @@ def get_ssm_parameter(param_name):
 
 def setup_selenium():
     """Set up the Selenium WebDriver (Chrome in headless mode)."""
+    print('Setting up Selenium...')
     chrome_options = Options()
-    # chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument("--window-size=1920x1080")
     chromedriver_path = os.path.join(
         os.path.dirname(__file__), 'bin', 'chromedriver'
     )
@@ -44,28 +45,32 @@ def setup_selenium():
 
 
 def login_iclicker(driver, email, password):
-    """Login to iClicker using Selenium."""
+    print('Logging in to iClicker...')
     driver.get('https://student.iclicker.com/#/login')
 
     # Enter the email and password
-    WebDriverWait(driver, 15).until(EC.presence_of_element_located(
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located(
         (By.ID, 'input-email'))).send_keys(email)
     driver.find_element(By.ID, 'input-email').submit()
 
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located(
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located(
         (By.ID, 'input-password'))).send_keys(password)
     driver.find_element(By.ID, 'input-password').submit()
 
     # Click sign-in button
-    WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.ID, 'sign-in-button'))).click()
+    sign_in_button = WebDriverWait(driver, 30).until(
+        EC.element_to_be_clickable((By.ID, 'sign-in-button'))
+    )
+    driver.execute_script("arguments[0].scrollIntoView();", sign_in_button)
+    driver.execute_script("arguments[0].click();", sign_in_button)
     print('Signed in to iClicker.')
 
 
-def join_class(driver, class_name):
+def click_class_section(driver, class_name):
     """Join the class using Selenium by partial matching of the class name."""
+    print('Joining class...')
     # Use XPath to find elements where the text contains the class name
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 30).until(
         EC.presence_of_element_located(
             (By.XPATH, f'//*[contains(text(), "{class_name}")]')
         )
@@ -75,22 +80,20 @@ def join_class(driver, class_name):
 
 def wait_for_join_button(driver, end_time, wait_time=30):
     """Wait until the 'Join' button appears, or exit if class ends."""
+    print('Waiting for join button...')
     button_found = False
     while not button_found:
-        if datetime.now() > end_time:
-            print('Class time is over, exiting polling loop...')
-            print(end_time)
-            print(datetime.now())
-            break
-
+        if (datetime.now() > end_time):
+            print('Class has ended, exiting...')
+            return False
         try:
-            WebDriverWait(driver, wait_time).until(
+            join_button = WebDriverWait(driver, wait_time).until(
                 EC.element_to_be_clickable((By.XPATH, '//*[@id="btnJoin"]'))
-            ).click()
+            )
+            driver.execute_script("arguments[0].click();", join_button)
             button_found = True
             print('Clicked Join button.')
         except Exception:
-            print('Join button not found, retrying...')
             time.sleep(5)  # Wait 5 seconds before retrying
 
     return button_found
@@ -98,6 +101,7 @@ def wait_for_join_button(driver, end_time, wait_time=30):
 
 def check_poll_status(driver):
     """Check if the quiz (poll) is active."""
+    print('Checking poll status...')
     try:
         # Polling URL typically contains '/poll'
         return '/poll' in driver.current_url
@@ -108,6 +112,7 @@ def check_poll_status(driver):
 
 def submit_attendance(driver):
     """Submit the quiz answer for attendance (click on Multiple Choice A)."""
+    print('Submitting attendance...')
     try:
         clicked = False
         print('Poll detected, attempting to submit attendance.')
@@ -129,26 +134,30 @@ def submit_attendance(driver):
 def main():
     """Execute the main iClicker automation process."""
     print('Starting iClicker automation...')
+    print(datetime.now(timezone.utc))
+
     # Retrieve iClicker credentials from SSM Parameter Store
     print('Retrieving iClicker credentials from SSM Parameter Store...')
     email = get_ssm_parameter('/iclicker/email')
     password = get_ssm_parameter('/iclicker/password')
 
-    # Get today's date
+    # class_name = my_classes[0]['class_name']
+    # if this is Monday, Wednesday, or Friday, use the first class
+
+    class_name = 'CPSC 317'
     today = datetime.now().date()
+    if today.weekday() in [1, 3]:
+        class_name = 'PSYC_V 102'
 
-    class_name = my_classes[0]['class_name']
-
-    end_time: datetime = datetime.combine(
-        today, datetime.strptime(my_classes[0]['end_time'], '%H:%M').time()
-    )
+    start_time = datetime.now()
+    end_time = start_time + timedelta(minutes=90)
 
     # Initialize Selenium
     driver = setup_selenium()
 
     # Login to iClicker
     login_iclicker(driver, email, password)
-    join_class(driver, class_name)
+    click_class_section(driver, class_name)
 
     # Wait until the "Join" button appears
     join_clicked = wait_for_join_button(driver, end_time)
@@ -156,7 +165,7 @@ def main():
     # Polling loop to check for active quizzes and submit attendance
     if join_clicked:
         poll_active = False
-        while datetime.now() < end_time:
+        while True:
             if check_poll_status(driver):
                 if not poll_active:
                     submit_attendance(driver)
@@ -167,6 +176,7 @@ def main():
 
     # Close the browser after completion
     driver.quit()
+    print('iClicker automation completed.')
 
 
 if __name__ == '__main__':
