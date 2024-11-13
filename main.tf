@@ -2,18 +2,18 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 # Provider configuration
 provider "aws" {
-  region = "us-east-1"  # Change this to your preferred region
+  region = "us-east-1"
 }
 
 
 # S3 bucket for storing the Python script
-resource "aws_s3_bucket" "app_bucket" {
-  bucket = "my-python-app-bucket"  # Change this to a unique bucket name
+resource "aws_s3_bucket" "iclicker_bucket" {
+  bucket = "iclicker-bucket-${data.aws_caller_identity.current.account_id}"
 }
 
 # Upload main.py to S3 bucket
 resource "aws_s3_object" "main_py" {
-  bucket = aws_s3_bucket.app_bucket.id
+  bucket = aws_s3_bucket.iclicker_bucket.id
   key    = "main.py"
   source = "main.py"
 }
@@ -42,14 +42,14 @@ resource "aws_security_group" "allow_ssh" {
   }
 }
 
-resource "aws_cloudwatch_log_group" "app_log_group" {
-  name = "/ec2/python-app"
-  retention_in_days = 1
+resource "aws_cloudwatch_log_group" "iclicker_log_group" {
+  name = "/ec2/iclicker"
+  retention_in_days = 7
 }
 
-resource "aws_cloudwatch_log_stream" "log_stream" {
-  name           = "my-log-stream"
-  log_group_name = aws_cloudwatch_log_group.app_log_group.name
+resource "aws_cloudwatch_log_stream" "iclicker_log_stream" {
+  name           = "iclicker_log_stream"
+  log_group_name = aws_cloudwatch_log_group.iclicker_log_group.name
 }
 
 resource "aws_iam_role_policy" "cloudwatch_policy" {
@@ -78,7 +78,7 @@ resource "aws_iam_role_policy" "cloudwatch_policy" {
 }
 
 # EC2 instance
-resource "aws_instance" "app_instance" {
+resource "aws_instance" "iclicker_instance" {
   ami           = "ami-06b21ccaeff8cd686"
   instance_type = "t2.micro"
 
@@ -156,8 +156,8 @@ resource "aws_instance" "app_instance" {
                           "collect_list": [
                               {
                                 "file_path": "/home/ec2-user/main.py.log",
-                                "log_group_name": "${aws_cloudwatch_log_group.app_log_group.name}",
-                                "log_stream_name":  "${aws_cloudwatch_log_stream.log_stream.name}",
+                                "log_group_name": "${aws_cloudwatch_log_group.iclicker_log_group.name}",
+                                "log_stream_name":  "${aws_cloudwatch_log_stream.iclicker_log_stream.name}",
                                 "timezone": "UTC"
                               }
                           ]
@@ -173,7 +173,7 @@ resource "aws_instance" "app_instance" {
                 echo "Started CloudWatch agent"
                 
                 # Download main.py from S3
-                aws s3 cp s3://${aws_s3_bucket.app_bucket.id}/main.py /home/ec2-user/main.py
+                aws s3 cp s3://${aws_s3_bucket.iclicker_bucket.id}/main.py /home/ec2-user/main.py
                 
                 # Set correct permissions
                 chown -R ec2-user:ec2-user /home/ec2-user
@@ -185,7 +185,7 @@ resource "aws_instance" "app_instance" {
                 EOF
 
   tags = {
-    Name = "Python App Instance"
+    Name = "iclicker_instance"
   }
 }
 
@@ -222,8 +222,8 @@ resource "aws_iam_role_policy" "s3_access_policy" {
         ]
         Effect = "Allow"
         Resource = [
-          aws_s3_bucket.app_bucket.arn,
-          "${aws_s3_bucket.app_bucket.arn}/*"
+          aws_s3_bucket.iclicker_bucket.arn,
+          "${aws_s3_bucket.iclicker_bucket.arn}/*"
         ]
       }
     ]
@@ -240,27 +240,27 @@ resource "aws_iam_instance_profile" "ec2_s3_profile" {
 # CloudWatch Event Rules (UTC)
 # PSYC 102
 resource "aws_cloudwatch_event_rule" "start_instance_rule" {
-  name                = "start_instance_tth"
+  name                = "start_instance_psyc102"
   description         = "Starts the EC2 instance at 6 PM UTC on Tuesday, Thursday"
   schedule_expression = "cron(0 19 ? * TUE,THU *)"
 }
 
 resource "aws_cloudwatch_event_rule" "stop_instance_rule" {
-  name                = "stop_instance_tth"
-  description         = "Stops the EC2 instance at 7:45 PM UTC on Tuesday, Thursday"
+  name                = "stop_instance_psyc102"
+  description         = "Stops the EC2 instance at 8 PM UTC on Tuesday, Thursday"
   schedule_expression = "cron(00 21 ? * TUE,THU *)"
 }
 
 # CPSC 317 
 resource "aws_cloudwatch_event_rule" "start_instance_rule_2" {
-  name                = "start_instance_mwf_2"
+  name                = "start_instance_cpsc317"
   description         = "Starts the EC2 instance at 10 PM UTC on Monday, Wednesday, and Friday"
   schedule_expression = "cron(0 23 ? * MON,WED,FRI *)"
 }
 
 resource "aws_cloudwatch_event_rule" "stop_instance_rule_2" {
-  name                = "stop_instance_mwf_2"
-  description         = "Stops the EC2 instance at 11 PM UTC on Monday, Wednesday, and Friday"
+  name                = "stop_instance_cpsc317"
+  description         = "Stops the EC2 instance at 12 PM UTC on Monday, Wednesday, and Friday"
   schedule_expression = "cron(00 01 ? * TUE,THU,SAT *)"
 }
 
@@ -330,7 +330,7 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
           "ec2:StartInstances",
           "ec2:StopInstances"
         ]
-        Resource = aws_instance.app_instance.arn
+        Resource = aws_instance.iclicker_instance.arn
       }
     ]
   })
@@ -350,7 +350,7 @@ resource "aws_lambda_function" "start_ec2_instance" {
 
   environment {
     variables = {
-      EC2_INSTANCE_ID = aws_instance.app_instance.id
+      EC2_INSTANCE_ID = aws_instance.iclicker_instance.id
     }
   }
 }
@@ -366,7 +366,7 @@ resource "aws_lambda_function" "stop_ec2_instance" {
 
   environment {
     variables = {
-      EC2_INSTANCE_ID = aws_instance.app_instance.id
+      EC2_INSTANCE_ID = aws_instance.iclicker_instance.id
     }
   }
 }
