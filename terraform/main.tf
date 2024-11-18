@@ -57,8 +57,8 @@ module "lambda" {
   source             = "./modules/lambda"
   lambda_role_name   = "lambda_start_stop_ec2_role"
   lambda_policy_name = "lambda_start_stop_ec2_policy"
-  start_lambda_zip   = "${path.root}/../lambda_function_start.zip"
-  stop_lambda_zip    = "${path.root}/../lambda_function_stop.zip"
+  start_lambda_zip   = "${path.root}/../lambda_zips/lambda_function_start.zip"
+  stop_lambda_zip    = "${path.root}/../lambda_zips/lambda_function_stop.zip"
   start_function_name = "start_ec2_instance"
   stop_function_name  = "stop_ec2_instance"
   ec2_instance_id    = module.ec2.instance_id

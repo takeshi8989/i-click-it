@@ -7,3 +7,6 @@
 **/terraform.tfvars
 **/terraform.tfstate
 secrets.auto.tfvars
+
+# Ignore generated ZIP files
+lambda_zips/
