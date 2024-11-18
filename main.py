@@ -4,7 +4,12 @@ This module handles web scraping and automation tasks using Selenium WebDriver.
 It interacts with AWS SSM Parameter Store for secure credential management.
 """
 
+import os
+import time
+import json
+import re
 import boto3
+import pytz
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -13,8 +18,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 from datetime import datetime, timezone, timedelta
-import time
-import os
 
 
 def get_ssm_parameter(param_name):
@@ -131,6 +134,80 @@ def submit_attendance(driver):
         print(f'An error occurred while submitting attendance: {str(e)}')
 
 
+def load_class_schedules_utc(json_file="class_schedules_utc.json"):
+    with open(json_file, "r") as file:
+        return json.load(file)
+
+
+def extract_days_from_cron(cron_expression):
+    """Extract the days from a cron expression."""
+    # Example: cron(0 19 ? * TUE,THU *)
+    days_match = re.search(r"\* ([A-Z,]+) \*", cron_expression)
+    if days_match:
+        return days_match.group(1).split(",")
+    return []
+
+
+def parse_cron_time(cron_expression):
+    """
+    Extract minute and hour from a cron expression.
+    Example cron expression: cron(0 19 ? * TUE,THU *)
+    """
+    # Extract the portion of the cron expression inside parentheses
+    match = re.search(r"cron\((\d+)\s+(\d+)\s+", cron_expression)
+    if match:
+        minute = int(match.group(1))
+        hour = int(match.group(2))
+        return minute, hour
+    else:
+        raise ValueError(f"Invalid cron expression: {cron_expression}")
+
+
+def get_current_class():
+    class_schedules = load_class_schedules_utc()
+    now_utc = datetime.now(pytz.utc)
+    # Get the current weekday as "MON", "TUE", etc.
+    current_weekday = now_utc.strftime("%a").upper()
+
+    for schedule in class_schedules:
+        # Extract class details
+        classname = schedule["iclicker_classname"]
+        start_cron = schedule["start_time"]
+        end_cron = schedule["end_time"]
+
+        # Extract days from cron expressions
+        start_days = extract_days_from_cron(start_cron)
+
+        # Skip this class if the current day is not in the start_days
+        if current_weekday not in start_days:
+            print(f"Skipping {classname} because it is not scheduled today.")
+            continue
+
+        # Parse cron expressions for start and end times
+        start_minute, start_hour = parse_cron_time(start_cron)
+        end_minute, end_hour = parse_cron_time(end_cron)
+
+        # Construct datetime objects for start and end times
+        start_time = now_utc.replace(
+            hour=start_hour, minute=start_minute, second=0, microsecond=0)
+        end_time = now_utc.replace(
+            hour=end_hour, minute=end_minute, second=0, microsecond=0)
+
+        # Handle overnight end times
+        if end_time < start_time:
+            end_time += timedelta(days=1)
+
+        if start_time <= now_utc <= end_time:
+            return {
+                "classname": classname,
+                "start_time": start_time,
+                # End 10 minutes early to ensure the script finishes
+                "end_time": end_time - timedelta(minutes=10)
+            }
+
+    return None
+
+
 def main():
     """Execute the main iClicker automation process."""
     print('Starting iClicker automation...')
@@ -141,16 +218,15 @@ def main():
     email = get_ssm_parameter('/iclicker/email')
     password = get_ssm_parameter('/iclicker/password')
 
-    # class_name = my_classes[0]['class_name']
-    # if this is Monday, Wednesday, or Friday, use the first class
+    current_class = get_current_class()
 
-    class_name = 'CPSC 317'
-    today = datetime.now().date()
-    if today.weekday() in [1, 3]:
-        class_name = 'PSYC_V 102'
+    if current_class is None:
+        print('No class is currently in session.')
+        return
 
-    start_time = datetime.now()
-    end_time = start_time + timedelta(minutes=90)
+    class_name = current_class["classname"]
+    end_time = current_class["end_time"]
+    print(f"Class in session: {class_name}")
 
     # Initialize Selenium
     driver = setup_selenium()

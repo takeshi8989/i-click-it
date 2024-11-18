@@ -10,3 +10,6 @@ secrets.auto.tfvars
 
 # Ignore generated ZIP files
 lambda_zips/
+
+# Ignore generated JSON files
+class_schedules_utc.json

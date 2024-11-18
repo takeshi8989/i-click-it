@@ -3,31 +3,23 @@ output "log_group_name" {
 }
 
 output "start_event_rule_names" {
-  value = [
-    aws_cloudwatch_event_rule.start_rule_psyc102.name,
-    aws_cloudwatch_event_rule.start_rule_cpsc317.name
-  ]
+  value = { for k, v in aws_cloudwatch_event_rule.start_rules : k => v.name }
 }
 
 output "stop_event_rule_names" {
-  value = [
-    aws_cloudwatch_event_rule.stop_rule_psyc102.name,
-    aws_cloudwatch_event_rule.stop_rule_cpsc317.name
-  ]
+  value = { for k, v in aws_cloudwatch_event_rule.stop_rules : k => v.name }
 }
 
-output "start_event_rule_arn_1" {
-  value = aws_cloudwatch_event_rule.start_rule_psyc102.arn
+# Output all start rule ARNs as a map
+output "start_event_rule_arns" {
+  value = {
+    for key, rule in aws_cloudwatch_event_rule.start_rules : key => rule.arn
+  }
 }
 
-output "stop_event_rule_arn_1" {
-  value = aws_cloudwatch_event_rule.stop_rule_psyc102.arn
-}
-
-output "start_event_rule_arn_2" {
-  value = aws_cloudwatch_event_rule.start_rule_cpsc317.arn
-}
-
-output "stop_event_rule_arn_2" {
-  value = aws_cloudwatch_event_rule.stop_rule_cpsc317.arn
+# Output all stop rule ARNs as a map
+output "stop_event_rule_arns" {
+  value = {
+    for key, rule in aws_cloudwatch_event_rule.stop_rules : key => rule.arn
+  }
 }

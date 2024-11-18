@@ -9,24 +9,13 @@ variable "retention_in_days" {
   default     = 7
 }
 
-variable "start_schedule_psyc102" {
-  description = "Schedule expression for starting EC2 for PSYC 102"
-  type        = string
-}
-
-variable "stop_schedule_psyc102" {
-  description = "Schedule expression for stopping EC2 for PSYC 102"
-  type        = string
-}
-
-variable "start_schedule_cpsc317" {
-  description = "Schedule expression for starting EC2 for CPSC 317"
-  type        = string
-}
-
-variable "stop_schedule_cpsc317" {
-  description = "Schedule expression for stopping EC2 for CPSC 317"
-  type        = string
+variable "class_schedules" {
+  description = "List of class schedules with start and stop times"
+  type        = list(object({
+    classname  = string
+    start_time = string
+    end_time   = string
+  }))
 }
 
 variable "start_lambda_function_arn" {

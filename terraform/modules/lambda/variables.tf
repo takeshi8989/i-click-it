@@ -44,32 +44,12 @@ variable "ec2_instance_arn" {
   type        = string
 }
 
-variable "start_lambda_function_name" {
-  description = "Name of the Lambda function to start EC2 instances"
-  type        = string
+variable "start_event_rule_arns" {
+  description = "Map of ARNs for CloudWatch start event rules"
+  type        = map(string)
 }
 
-variable "stop_lambda_function_name" {
-  description = "Name of the Lambda function to stop EC2 instances"
-  type        = string
-}
-
-variable "start_event_rule_arn_1" {
-  description = "ARN of the first CloudWatch start event rule"
-  type        = string
-}
-
-variable "stop_event_rule_arn_1" {
-  description = "ARN of the first CloudWatch stop event rule"
-  type        = string
-}
-
-variable "start_event_rule_arn_2" {
-  description = "ARN of the second CloudWatch start event rule"
-  type        = string
-}
-
-variable "stop_event_rule_arn_2" {
-  description = "ARN of the second CloudWatch stop event rule"
-  type        = string
+variable "stop_event_rule_arns" {
+  description = "Map of ARNs for CloudWatch stop event rules"
+  type        = map(string)
 }
