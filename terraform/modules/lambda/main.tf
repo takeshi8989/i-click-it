@@ -78,35 +78,24 @@ resource "aws_lambda_function" "stop_instance" {
   }
 }
 
-# Lambda Permissions for CloudWatch to call Start Lambda
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_start_lambda_1" {
-  statement_id  = "AllowExecutionFromCloudWatch1"
+# Lambda Permissions for CloudWatch to invoke Start Lambda
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_start_lambda" {
+  for_each = var.start_event_rule_arns
+
+  statement_id  = "AllowExecutionFromCloudWatch-${each.key}"
   action        = "lambda:InvokeFunction"
-  function_name = var.start_lambda_function_name
+  function_name = aws_lambda_function.start_instance.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = var.start_event_rule_arn_1
+  source_arn    = each.value
 }
 
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_stop_lambda_1" {
-  statement_id  = "AllowExecutionFromCloudWatch2"
-  action        = "lambda:InvokeFunction"
-  function_name = var.stop_lambda_function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = var.stop_event_rule_arn_1
-}
+# Lambda Permissions for CloudWatch to invoke Stop Lambda
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_stop_lambda" {
+  for_each = var.stop_event_rule_arns
 
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_start_lambda_2" {
-  statement_id  = "AllowExecutionFromCloudWatch3"
+  statement_id  = "AllowExecutionFromCloudWatch-${each.key}"
   action        = "lambda:InvokeFunction"
-  function_name = var.start_lambda_function_name
+  function_name = aws_lambda_function.stop_instance.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = var.start_event_rule_arn_2
-}
-
-resource "aws_lambda_permission" "allow_cloudwatch_to_call_stop_lambda_2" {
-  statement_id  = "AllowExecutionFromCloudWatch4"
-  action        = "lambda:InvokeFunction"
-  function_name = var.stop_lambda_function_name
-  principal     = "events.amazonaws.com"
-  source_arn    = var.stop_event_rule_arn_2
+  source_arn    = each.value
 }

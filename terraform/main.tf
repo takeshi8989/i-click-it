@@ -40,17 +40,18 @@ module "iam" {
   tags                   = var.tags
 }
 
+locals {
+  class_schedules = jsondecode(file("${path.root}/../class_schedule.json"))
+}
+
 module "cloudwatch" {
   source                      = "./modules/cloudwatch"
-  log_group_name             = "/ec2/iclicker"
-  retention_in_days          = 7
-  start_schedule_psyc102      = "cron(0 19 ? * TUE,THU *)"
-  stop_schedule_psyc102       = "cron(00 21 ? * TUE,THU *)"
-  start_schedule_cpsc317      = "cron(0 23 ? * MON,WED,FRI *)"
-  stop_schedule_cpsc317       = "cron(00 01 ? * TUE,THU,SAT *)"
+  log_group_name              = "/ec2/iclicker"
+  retention_in_days           = 7
+  class_schedules             = local.class_schedules
   start_lambda_function_arn   = module.lambda.start_lambda_function_arn
   stop_lambda_function_arn    = module.lambda.stop_lambda_function_arn
-  tags                       = var.tags
+  tags                        = var.tags
 }
 
 module "lambda" {
@@ -63,10 +64,6 @@ module "lambda" {
   stop_function_name  = "stop_ec2_instance"
   ec2_instance_id    = module.ec2.instance_id
   ec2_instance_arn   = module.ec2.instance_arn
-  start_lambda_function_name = "start_ec2_instance"
-  stop_lambda_function_name  = "stop_ec2_instance"
-  start_event_rule_arn_1     = module.cloudwatch.start_event_rule_arn_1
-  stop_event_rule_arn_1      = module.cloudwatch.stop_event_rule_arn_1
-  start_event_rule_arn_2     = module.cloudwatch.start_event_rule_arn_2
-  stop_event_rule_arn_2      = module.cloudwatch.stop_event_rule_arn_2
+  start_event_rule_arns = module.cloudwatch.start_event_rule_arns
+  stop_event_rule_arns  = module.cloudwatch.stop_event_rule_arns
 }
