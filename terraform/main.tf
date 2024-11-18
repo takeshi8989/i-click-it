@@ -41,7 +41,7 @@ module "iam" {
 }
 
 locals {
-  class_schedules = jsondecode(file("${path.root}/../class_schedule.json"))
+  class_schedules = jsondecode(file("${path.root}/../class_schedules_utc.json"))
 }
 
 module "cloudwatch" {

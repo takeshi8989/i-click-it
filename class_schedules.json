@@ -1,0 +1,14 @@
+[
+  {
+    "classname": "PSYC102",
+    "start_time": "11:00",
+    "end_time": "12:30",
+    "days": ["TUE", "THU"]
+  },
+  {
+    "classname": "CPSC317",
+    "start_time": "15:00",
+    "end_time": "16:00",
+    "days": ["MON", "WED", "FRI"]
+  }
+]
