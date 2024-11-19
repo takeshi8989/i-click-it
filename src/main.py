@@ -16,12 +16,10 @@ def main():
     """Execute the main iClicker automation process."""
     print_log('Starting iClicker automation...')
 
-    # Retrieve iClicker credentials from SSM Parameter Store
     print_log('Retrieving iClicker credentials from SSM Parameter Store...')
     email = get_ssm_parameter('/iclicker/email')
     password = get_ssm_parameter('/iclicker/password')
 
-    # Determine the current class based on the schedule
     current_class = get_current_class()
 
     if current_class is None:
@@ -32,20 +30,15 @@ def main():
     end_time = current_class["end_time"]
     print_log(f"Class in session: {class_name}")
 
-    # Set up Selenium WebDriver
     driver = setup_selenium()
 
     try:
-        # Log in to iClicker
         login_iclicker(driver, email, password)
 
-        # Join the class section
         click_class_section(driver, class_name)
 
-        # Wait for the "Join" button to appear and click it
         join_clicked = wait_for_join_button(driver, end_time)
 
-        # Polling loop to check for active quizzes and submit attendance
         if join_clicked:
             print_log('Waiting for polls...')
             poll_active = False
@@ -55,17 +48,16 @@ def main():
                         submit_attendance(driver)
                         poll_active = True
                 else:
-                    poll_active = False  # Reset if not on a poll page
+                    poll_active = False
 
                 # Exit if the class has ended
                 if time.time() > end_time.timestamp():
                     print_log('Class has ended.')
                     break
 
-                time.sleep(30)  # Poll every 30 seconds
+                time.sleep(30)
 
     finally:
-        # Close the browser after the session ends
         driver.quit()
         print_log('iClicker automation completed.')
 
