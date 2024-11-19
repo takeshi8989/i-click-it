@@ -13,6 +13,7 @@ bash "$SCRIPT_DIR/zip_lambda.sh"
 
 echo "Running Terraform apply..."
 cd "$ROOT_DIR/terraform"
+terraform init
 terraform apply -auto-approve
 
 echo "Deployment completed successfully."
