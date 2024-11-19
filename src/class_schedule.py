@@ -1,3 +1,4 @@
+import os
 import json
 import re
 from datetime import datetime, timedelta
@@ -5,8 +6,10 @@ import pytz
 from log_utils import print_log
 
 
-def load_class_schedules_utc(json_file="class_schedules_utc.json"):
+def load_class_schedules_utc():
     """Load class schedules from a JSON file."""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    json_file = os.path.join(current_dir, "../class_schedules_utc.json")
     with open(json_file, "r") as file:
         return json.load(file)
 
