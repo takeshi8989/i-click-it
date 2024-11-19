@@ -2,6 +2,7 @@
 
 set -e
 
+# Define paths
 SCRIPT_DIR=$(dirname "$0")
 ROOT_DIR="$SCRIPT_DIR/.."
 
@@ -23,4 +24,5 @@ cd "$ROOT_DIR/terraform"
 terraform init
 terraform apply -auto-approve
 cd ..
+
 echo "Deployment completed successfully."
