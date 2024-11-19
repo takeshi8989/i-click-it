@@ -67,6 +67,8 @@ Replace:
 - `start_time` and `end_time` with the class start and end times in 24-hour format.
 - `days` with the days of the week your class occurs (use abbreviations: MON, TUE, etc.).
 
+<img width="695" alt="Screenshot 2024-11-18 at 8 43 24 PM" src="https://github.com/user-attachments/assets/31bf6662-6435-4374-ad62-9fd791d1a746">
+
 
 ### Step 5: Deploy I-Click-It
 Run the following command to deploy the tool:
