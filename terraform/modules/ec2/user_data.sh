@@ -48,7 +48,7 @@ echo "Installed additional dependencies"
 python3 -m venv /home/ec2-user/venv
 source /home/ec2-user/venv/bin/activate
 pip install --upgrade pip
-pip install boto3 selenium
+pip install boto3 selenium pytz
 deactivate
 echo "Installed Python packages in virtual environment"
 
