@@ -2,6 +2,7 @@
 
 set -e
 
+# Define paths
 SCRIPT_DIR=$(dirname "$0")
 ROOT_DIR="$SCRIPT_DIR/.."
 

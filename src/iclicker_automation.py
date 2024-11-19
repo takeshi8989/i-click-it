@@ -56,7 +56,7 @@ def wait_for_join_button(driver, end_time, wait_time=30):
             button_found = True
             print_log('Clicked Join button.')
         except Exception:
-            time.sleep(5)  # Retry after a short delay
+            time.sleep(5)
     return button_found
 
 

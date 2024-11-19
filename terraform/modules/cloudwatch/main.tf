@@ -1,4 +1,3 @@
-# CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "log_group" {
   name              = var.log_group_name
   retention_in_days = var.retention_in_days
@@ -6,7 +5,6 @@ resource "aws_cloudwatch_log_group" "log_group" {
   tags = var.tags
 }
 
-# Iterate over each class schedule to create start and stop rules
 resource "aws_cloudwatch_event_rule" "start_rules" {
   for_each            = { for schedule in var.class_schedules : schedule.classname => schedule }
   name                = "start_rule_${each.key}"
@@ -21,7 +19,6 @@ resource "aws_cloudwatch_event_rule" "stop_rules" {
   schedule_expression = each.value.end_time
 }
 
-# Event Targets for Start Rules
 resource "aws_cloudwatch_event_target" "start_targets" {
   for_each = aws_cloudwatch_event_rule.start_rules
   rule      = each.value.name
@@ -29,7 +26,6 @@ resource "aws_cloudwatch_event_target" "start_targets" {
   arn       = var.start_lambda_function_arn
 }
 
-# Event Targets for Stop Rules
 resource "aws_cloudwatch_event_target" "stop_targets" {
   for_each = aws_cloudwatch_event_rule.stop_rules
   rule      = each.value.name
