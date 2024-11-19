@@ -82,14 +82,14 @@ echo "Created CloudWatch agent config"
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
 echo "Started CloudWatch agent"
 
-# Download main.py and class_schedules_utc.json from S3
-aws s3 cp s3://${S3_BUCKET_NAME}/main.py /home/ec2-user/main.py
+# Download Python scripts and configuration files from S3
+aws s3 sync s3://${S3_BUCKET_NAME}/src /home/ec2-user/src
 aws s3 cp s3://${S3_BUCKET_NAME}/class_schedules_utc.json /home/ec2-user/class_schedules_utc.json
 
 # Set correct permissions
 chown -R ec2-user:ec2-user /home/ec2-user
-echo "Copied main.py from S3 and set permissions"
+echo "Copied Python files and JSON configuration from S3 and set permissions"
 
-# Run the Python script
+# Run the main Python script
 source /home/ec2-user/venv/bin/activate
-python /home/ec2-user/main.py > /home/ec2-user/main.py.log 2>&1 &
+python /home/ec2-user/src/main.py > /home/ec2-user/main.py.log 2>&1 &
