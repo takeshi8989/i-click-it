@@ -17,7 +17,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
+
+
+def print_log(message, tz='America/Vancouver'):
+    print(f"{datetime.now(pytz.timezone(tz))}: {message}")
 
 
 def get_ssm_parameter(param_name):
@@ -27,13 +31,13 @@ def get_ssm_parameter(param_name):
         response = ssm.get_parameter(Name=param_name, WithDecryption=True)
         return response['Parameter']['Value']
     except (NoCredentialsError, PartialCredentialsError):
-        print('Error fetching parameters.')
+        print_log('Error fetching parameters.')
         return None
 
 
 def setup_selenium():
     """Set up the Selenium WebDriver (Chrome in headless mode)."""
-    print('Setting up Selenium...')
+    print_log('Setting up Selenium...')
     chrome_options = Options()
     chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
@@ -48,7 +52,7 @@ def setup_selenium():
 
 
 def login_iclicker(driver, email, password):
-    print('Logging in to iClicker...')
+    print_log('Logging in to iClicker...')
     driver.get('https://student.iclicker.com/#/login')
 
     # Enter the email and password
@@ -66,28 +70,28 @@ def login_iclicker(driver, email, password):
     )
     driver.execute_script("arguments[0].scrollIntoView();", sign_in_button)
     driver.execute_script("arguments[0].click();", sign_in_button)
-    print('Signed in to iClicker.')
+    print_log('Logged in to iClicker.')
 
 
 def click_class_section(driver, class_name):
     """Join the class using Selenium by partial matching of the class name."""
-    print('Joining class...')
+    print_log(f'Joining class containing "{class_name}"...')
     # Use XPath to find elements where the text contains the class name
     WebDriverWait(driver, 30).until(
         EC.presence_of_element_located(
             (By.XPATH, f'//*[contains(text(), "{class_name}")]')
         )
     ).click()
-    print(f'Joined class containing "{class_name}".')
+    print_log(f'Joined class containing "{class_name}".')
 
 
 def wait_for_join_button(driver, end_time, wait_time=30):
     """Wait until the 'Join' button appears, or exit if class ends."""
-    print('Waiting for join button...')
+    print_log('Waiting for join button...')
     button_found = False
     while not button_found:
-        if (datetime.now() > end_time):
-            print('Class has ended, exiting...')
+        if datetime.now(pytz.utc) > end_time:
+            print_log('Class has ended, exiting...')
             return False
         try:
             join_button = WebDriverWait(driver, wait_time).until(
@@ -95,7 +99,7 @@ def wait_for_join_button(driver, end_time, wait_time=30):
             )
             driver.execute_script("arguments[0].click();", join_button)
             button_found = True
-            print('Clicked Join button.')
+            print_log('Clicked Join button.')
         except Exception:
             time.sleep(5)  # Wait 5 seconds before retrying
 
@@ -104,21 +108,19 @@ def wait_for_join_button(driver, end_time, wait_time=30):
 
 def check_poll_status(driver):
     """Check if the quiz (poll) is active."""
-    print('Checking poll status...')
     try:
         # Polling URL typically contains '/poll'
         return '/poll' in driver.current_url
     except Exception as e:
-        print(f'An error occurred while checking poll status: {str(e)}')
+        print_log(f'An error occurred while checking poll status: {str(e)}')
         return False
 
 
 def submit_attendance(driver):
     """Submit the quiz answer for attendance (click on Multiple Choice A)."""
-    print('Submitting attendance...')
+    print_log('Poll detected, attempting to submit attendance.')
     try:
         clicked = False
-        print('Poll detected, attempting to submit attendance.')
         while not clicked:
             try:
                 multiple_choice_a = WebDriverWait(driver, 10).until(
@@ -126,12 +128,13 @@ def submit_attendance(driver):
                 )
                 multiple_choice_a.click()
                 clicked = True
-                print('Attendance submitted successfully (Multiple Choice A).')
+                print_log(
+                    'Attendance submitted successfully (Multiple Choice A).')
             except Exception as e:
-                print(f'Failed to click: {e}, retrying...')
+                print_log(f'Failed to click: {e}, retrying...')
                 time.sleep(1)
     except Exception as e:
-        print(f'An error occurred while submitting attendance: {str(e)}')
+        print_log(f'An error occurred while submitting attendance: {str(e)}')
 
 
 def load_class_schedules_utc(json_file="class_schedules_utc.json"):
@@ -180,7 +183,8 @@ def get_current_class():
 
         # Skip this class if the current day is not in the start_days
         if current_weekday not in start_days:
-            print(f"Skipping {classname} because it is not scheduled today.")
+            print_log(
+                f"Skipping {classname} because it is not scheduled today.")
             continue
 
         # Parse cron expressions for start and end times
@@ -201,7 +205,6 @@ def get_current_class():
             return {
                 "classname": classname,
                 "start_time": start_time,
-                # End 10 minutes early to ensure the script finishes
                 "end_time": end_time - timedelta(minutes=10)
             }
 
@@ -210,23 +213,22 @@ def get_current_class():
 
 def main():
     """Execute the main iClicker automation process."""
-    print('Starting iClicker automation...')
-    print(datetime.now(timezone.utc))
+    print_log('Starting iClicker automation...')
 
     # Retrieve iClicker credentials from SSM Parameter Store
-    print('Retrieving iClicker credentials from SSM Parameter Store...')
+    print_log('Retrieving iClicker credentials from SSM Parameter Store...')
     email = get_ssm_parameter('/iclicker/email')
     password = get_ssm_parameter('/iclicker/password')
 
     current_class = get_current_class()
 
     if current_class is None:
-        print('No class is currently in session.')
+        print_log('No class is currently in session.')
         return
 
     class_name = current_class["classname"]
     end_time = current_class["end_time"]
-    print(f"Class in session: {class_name}")
+    print_log(f"Class in session: {class_name}")
 
     # Initialize Selenium
     driver = setup_selenium()
@@ -240,6 +242,7 @@ def main():
 
     # Polling loop to check for active quizzes and submit attendance
     if join_clicked:
+        print_log('Waiting for polls...')
         poll_active = False
         while True:
             if check_poll_status(driver):
@@ -252,7 +255,7 @@ def main():
 
     # Close the browser after completion
     driver.quit()
-    print('iClicker automation completed.')
+    print_log('iClicker automation completed.')
 
 
 if __name__ == '__main__':
