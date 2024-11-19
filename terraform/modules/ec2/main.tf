@@ -1,4 +1,3 @@
-# Security Group to Allow SSH
 resource "aws_security_group" "allow_ssh" {
   name        = var.security_group_name
   description = "Allow SSH inbound traffic"

@@ -1,4 +1,3 @@
-# IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = var.lambda_role_name
 
@@ -16,7 +15,6 @@ resource "aws_iam_role" "lambda_role" {
   })
 }
 
-# IAM Policy for Lambda
 resource "aws_iam_role_policy" "lambda_policy" {
   name = var.lambda_policy_name
   role = aws_iam_role.lambda_role.id
@@ -46,7 +44,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
-# Lambda Function to Start EC2 Instances
 resource "aws_lambda_function" "start_instance" {
   filename         = var.start_lambda_zip
   function_name    = var.start_function_name
@@ -62,7 +59,6 @@ resource "aws_lambda_function" "start_instance" {
   }
 }
 
-# Lambda Function to Stop EC2 Instances
 resource "aws_lambda_function" "stop_instance" {
   filename         = var.stop_lambda_zip
   function_name    = var.stop_function_name
@@ -78,7 +74,6 @@ resource "aws_lambda_function" "stop_instance" {
   }
 }
 
-# Lambda Permissions for CloudWatch to invoke Start Lambda
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_start_lambda" {
   for_each = var.start_event_rule_arns
 
@@ -89,7 +84,6 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_start_lambda" {
   source_arn    = each.value
 }
 
-# Lambda Permissions for CloudWatch to invoke Stop Lambda
 resource "aws_lambda_permission" "allow_cloudwatch_to_call_stop_lambda" {
   for_each = var.stop_event_rule_arns
 

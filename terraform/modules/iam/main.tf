@@ -1,4 +1,3 @@
-# IAM Role for EC2 to access S3
 resource "aws_iam_role" "ec2_s3_access_role" {
   name = var.role_name
 
@@ -18,7 +17,6 @@ resource "aws_iam_role" "ec2_s3_access_role" {
   tags = var.tags
 }
 
-# IAM Policy for S3 access
 resource "aws_iam_role_policy" "s3_access_policy" {
   name = var.policy_name
   role = aws_iam_role.ec2_s3_access_role.id
@@ -41,14 +39,12 @@ resource "aws_iam_role_policy" "s3_access_policy" {
   })
 }
 
-# IAM Instance Profile
 resource "aws_iam_instance_profile" "ec2_s3_profile" {
   name = var.instance_profile_name
   role = aws_iam_role.ec2_s3_access_role.name
 }
 
 
-# IAM Policy for CloudWatch access
 resource "aws_iam_role_policy" "cloudwatch_policy" {
   name = var.cloudwatch_policy_name
   role = aws_iam_role.ec2_s3_access_role.id
@@ -74,7 +70,6 @@ resource "aws_iam_role_policy" "cloudwatch_policy" {
   })
 }
 
-# IAM Role for EventBridge to Start/Stop EC2
 resource "aws_iam_role" "eventbridge_role" {
   name = var.eventbridge_role_name
 
@@ -94,7 +89,6 @@ resource "aws_iam_role" "eventbridge_role" {
   tags = var.tags
 }
 
-# IAM Policy for EventBridge to Start/Stop EC2
 resource "aws_iam_role_policy" "eventbridge_policy" {
   name = var.eventbridge_policy_name
   role = aws_iam_role.eventbridge_role.id
@@ -124,7 +118,6 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
   })
 }
 
-# IAM policy for SSM access
 resource "aws_iam_role_policy" "ssm_access_policy" {
   name = "ssm_access_policy"
   role = aws_iam_role.ec2_s3_access_role.id
