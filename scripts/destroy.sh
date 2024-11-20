@@ -17,4 +17,3 @@ echo "Destroy completed successfully."
 # Cleanup generated files
 echo "Starting cleanup..."
 bash "$SCRIPT_DIR/cleanup.sh"
-echo "Cleanup completed successfully."

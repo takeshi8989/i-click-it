@@ -15,7 +15,10 @@ def setup_selenium():
     chrome_options.add_argument("--window-size=1920x1080")
 
     chromedriver_path = os.path.join(
-        os.path.dirname(__file__), 'bin', 'chromedriver'
+        os.path.dirname(os.path.abspath(__file__)),
+        '..',
+        'bin',
+        'chromedriver'
     )
     service = Service(chromedriver_path)
     driver = webdriver.Chrome(service=service, options=chrome_options)
