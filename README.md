@@ -47,14 +47,14 @@ Replace `"your_email@example.com"` and `"your_password"` with your actual creden
 [
   {
     "classname": "PSYC102",
-    "name_on_iclicker": "PSYC_V 102",
+    "iclicker_classname": "PSYC_V 102",
     "start_time": "11:00",
     "end_time": "12:30",
     "days": ["TUE", "THU"]
   },
   {
     "classname": "CPSC317",
-    "name_on_iclicker": "CPSC 317",
+    "iclicker_classname": "CPSC 317",
     "start_time": "15:00",
     "end_time": "16:00",
     "days": ["MON", "WED", "FRI"]
