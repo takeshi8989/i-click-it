@@ -32,6 +32,7 @@ fi
 # Exit if email and password are still default values
 if [[ "$email" == "user@example.com" && "$password" == "userpassword" ]]; then
   echo "Error: Default email and password detected in $CREDENTIALS_FILE. Please update them."
+  echo "For more information, refer to the README: https://github.com/takeshi8989/i-click-it?tab=readme-ov-file#step-3-edit-user-credentials"
   exit 1
 fi
 

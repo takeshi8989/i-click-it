@@ -1,16 +1,12 @@
 [
+  // Add your course schedule and remove this comment.
+  // To see an example, check out README.md
+  // https://github.com/takeshi8989/i-click-it?tab=readme-ov-file#step-4-edit-class-schedules
   {
-    "classname": "PSYC102",
-    "iclicker_classname": "PSYC_V 102",
-    "start_time": "11:00",
-    "end_time": "12:30",
-    "days": ["TUE", "THU"]
-  },
-  {
-    "classname": "CPSC317",
-    "iclicker_classname": "CPSC 317",
-    "start_time": "15:00",
-    "end_time": "16:00",
-    "days": ["MON", "WED", "FRI"]
+    "classname": "",
+    "iclicker_classname": "",
+    "start_time": "",
+    "end_time": "",
+    "days": ["", ""]
   }
 ]
