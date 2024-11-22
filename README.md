@@ -34,8 +34,8 @@ aws configure
 2. Open or create the file `user_credentials.json` and add your email and password in the following format:
 ``` json
 {
-  "email": "user@example.com",
-  "password": "userpassword"
+  "email": "your_email@example.com",
+  "password": "your_password"
 }
 ```
 Replace `"your_email@example.com"` and `"your_password"` with your actual credentials.
