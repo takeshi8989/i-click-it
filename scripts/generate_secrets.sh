@@ -29,6 +29,13 @@ if [[ -z "$email" || -z "$password" ]]; then
   exit 1
 fi
 
+# Exit if email and password are still default values
+if [[ "$email" == "your_email@example.com" && "$password" == "your_password" ]]; then
+  echo "Error: Default email and password detected in $CREDENTIALS_FILE. Please update them."
+  echo "For more information, refer to the README: https://github.com/takeshi8989/i-click-it?tab=readme-ov-file#step-3-edit-user-credentials"
+  exit 1
+fi
+
 # Generate the secrets.auto.tfvars file
 cat > "$TFVARS_FILE" <<EOF
 iclicker_email = "$email"

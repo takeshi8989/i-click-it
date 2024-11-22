@@ -22,6 +22,19 @@ if [[ ! -f "$INPUT_FILE" ]]; then
   exit 1
 fi
 
+# Validate JSON and exit if it contains placeholders or invalid JSON
+if ! jq empty "$INPUT_FILE" 2>/dev/null; then
+  echo "Error: Input file $INPUT_FILE contains invalid JSON or comments!"
+  exit 1
+fi
+
+# Check for placeholder values in the JSON
+if jq -e '.[] | select(.classname == "")' "$INPUT_FILE" >/dev/null; then
+  echo "Error: Input file $INPUT_FILE contains placeholders. Please update the file with actual data."
+  echo "For more information, refer to the README: https://github.com/takeshi8989/i-click-it?tab=readme-ov-file#step-4-edit-class-schedules"
+  exit 1
+fi
+
 # Run the Python script
 echo "Running Python script to convert class schedules to UTC..."
 python3 "$PYTHON_SCRIPT"
