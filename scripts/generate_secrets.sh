@@ -29,6 +29,12 @@ if [[ -z "$email" || -z "$password" ]]; then
   exit 1
 fi
 
+# Exit if email and password are still default values
+if [[ "$email" == "user@example.com" && "$password" == "userpassword" ]]; then
+  echo "Error: Default email and password detected in $CREDENTIALS_FILE. Please update them."
+  exit 1
+fi
+
 # Generate the secrets.auto.tfvars file
 cat > "$TFVARS_FILE" <<EOF
 iclicker_email = "$email"
