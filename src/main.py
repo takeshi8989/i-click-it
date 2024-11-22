@@ -56,7 +56,8 @@ def main():
                     break
 
                 time.sleep(30)
-
+    except Exception as e:
+        print_log(f'Error occurred: {e}')
     finally:
         driver.quit()
         print_log('iClicker automation completed.')
