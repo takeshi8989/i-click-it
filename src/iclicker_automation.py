@@ -64,8 +64,8 @@ def check_poll_status(driver):
     """Check if the poll (quiz) is active."""
     try:
         return '/poll' in driver.current_url
-    except Exception as e:
-        print_log(f'Error checking poll status: {e}')
+    except Exception:
+        print_log('Error checking poll status.')
         return False
 
 
@@ -83,8 +83,8 @@ def submit_attendance(driver):
                 clicked = True
                 print_log(
                     'Attendance submitted successfully (Multiple Choice A).')
-            except Exception as e:
-                print_log(f'Failed to submit attendance: {e}, retrying...')
+            except Exception:
+                print_log('Failed to submit attendance, retrying...')
                 time.sleep(1)
     except Exception as e:
         print_log(f'Error during attendance submission: {e}')
