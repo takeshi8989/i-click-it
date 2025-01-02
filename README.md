@@ -1,4 +1,4 @@
-# I-Click-It: Automate Class Attendance
+# I Click It: Automate Class Attendance
 I-Click-It is a tool designed to help students automate class attendance by leveraging AWS Lambda and CloudWatch to manage class schedules and ensure seamless operations.
 
 This guide will walk you through setting up I-Click-It step-by-step, even if you have little to no technical background.
