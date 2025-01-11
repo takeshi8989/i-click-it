@@ -16,7 +16,33 @@ Before getting started, ensure you have the following:
 ### Step 1: Create an AWS Account
 If you don’t already have an AWS account, follow this [official guide](https://repost.aws/knowledge-center/create-and-activate-aws-account) to create one.
 
-### Step 2: Configure AWS Credentials
+
+### Step 2: Clone the Repository
+Run the following command to clone the I-Click-It repository:
+```bash
+git clone https://github.com/yourusername/i-click-it.git
+cd i-click-it
+```
+
+### Step 3: Set Up Python Environment
+To avoid conflicts with existing Python packages, use a virtual environment:
+
+1. **Create a virtual environment**:
+```bash
+   python3 -m venv venv
+```
+
+2. **Activate the virtual environment**:
+```bash
+   source venv/bin/activate
+```
+
+3. **Install required Python packages**:
+```bash
+  pip install -r requirements.txt
+```
+
+### Step 4: Configure AWS Credentials
 You’ll need to set up AWS credentials to allow the tool to interact with AWS services.
 1. Install the AWS Command Line Interface (CLI) by following [this guide](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 2. Open a terminal and run:
@@ -29,7 +55,7 @@ aws configure
 - Default region name: Use `us-east-1` (or the region of your choice).
 - Default output format: Leave blank or use `json`.
 
-### Step 3: Edit User Credentials
+### Step 5: Edit User Credentials
 1. Navigate to the project’s root directory.
 2. Open or create the file `user_credentials.json` and add your email and password in the following format:
 ``` json
@@ -40,7 +66,7 @@ aws configure
 ```
 Replace `"your_email@example.com"` and `"your_password"` with your actual credentials.
 
-### Step 4: Edit Class Schedules
+### Step 6: Edit Class Schedules
 1. Open the file `class_schedules.json` in the project’s root directory.
 2. Define your class schedules in the following format:
 ``` json
@@ -70,7 +96,7 @@ Replace:
 <img width="695" alt="Screenshot 2024-11-18 at 8 43 24 PM" src="https://github.com/user-attachments/assets/1f631271-5fc5-4afa-87d0-5f676d8168b5">
 
 
-### Step 5: Deploy I-Click-It
+### Step 7: Deploy I-Click-It
 Run the following command to deploy the tool:
 
 ```bash
